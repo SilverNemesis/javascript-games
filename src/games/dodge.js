@@ -59,6 +59,8 @@ function update() {
       obstacles[i].update();
     }
 
+    state.obstacles = obstacles.filter(x => x.onScreen);
+
     score.text = 'SCORE: ' + state.frameCount;
 
     const rect = player.getCollisionBounds();
@@ -185,14 +187,14 @@ class ObstacleComponent {
     this.width = width;
     this.height = height;
     this.color = color;
+    this.onScreen = true;
   }
 
   update() {
     this.x--;
     if (this.x + this.width <= 0) {
-      return false;
+      this.onScreen = false;
     }
-    return true;
   }
 
   render(ctx) {
