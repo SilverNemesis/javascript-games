@@ -1,7 +1,8 @@
 import React from 'react';
+import dodge from './games/dodge';
 import noise from './games/noise';
 
-const games = [noise];
+const games = [dodge, noise];
 
 let gameIndex = 0;
 
