@@ -1,4 +1,4 @@
-import { collide, boundingRectangle } from '../lib/collision';
+import { collide, boundingRectangle, boundingCircle } from '../lib/collision';
 
 let state = {}
 
@@ -20,7 +20,7 @@ export default function initialize({ width, height }) {
     paused: false,
     frameCount: 0,
     obstacles: [],
-    player: new PlayerComponent(10, 75, 30, 30, 'red'),
+    player: new PlayerComponent(15, 75, 15, 'red'),
     score: new TextComponent(screen.x, 0, 'white', 'Consolas', 15),
     keyState: {}
   };
@@ -131,11 +131,10 @@ class TextComponent {
 }
 
 class PlayerComponent {
-  constructor(x, y, width, height, color) {
-    this.width = width;
-    this.height = height;
+  constructor(x, y, radius, color) {
     this.x = x;
     this.y = y;
+    this.radius = radius;
     this.color = color;
     this.speedX = 0;
     this.speedY = 0;
@@ -167,16 +166,17 @@ class PlayerComponent {
 
   render(ctx) {
     ctx.fillStyle = this.color;
-    let { x, y, width, height } = this;
+    let { x, y, radius } = this;
     x = x * state.scale + state.offsetX;
     y = y * state.scale + state.offsetY;
-    width *= state.scale;
-    height *= state.scale;
-    ctx.fillRect(x, y, width, height);
+    radius *= state.scale;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2, true);
+    ctx.fill();
   }
 
   getCollisionBounds() {
-    return boundingRectangle(this.x, this.y, this.x + this.width, this.y + this.height);
+    return boundingCircle(this.x, this.y, this.radius);
   }
 }
 
