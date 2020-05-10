@@ -6,22 +6,23 @@ export default function initialize({ ctx, width, height }) {
     width,
     height,
     image: ctx.createImageData(width, height)
-  }
+  };
   return {
     name: 'noise',
+    resize,
     render,
     handleKeyDown
-  }
+  };
 }
 
-function render({ ctx, width, height }) {
-  if (width !== state.width || height !== state.height) {
-    state.width = width;
-    state.height = height;
-    state.image = ctx.createImageData(width, height);
-  }
+function resize({ ctx, width, height }) {
+  state.width = width;
+  state.height = height;
+  state.image = ctx.createImageData(width, height);
+}
 
-  const { size } = state;
+function render({ ctx }) {
+  const { size, width, height } = state;
   const buffer = state.image.data;
 
   for (let y = 0; y < height; y += size) {
@@ -47,10 +48,9 @@ function handleKeyDown(event) {
     if (state.size > 1) {
       state.size--;
     }
-  } else
-    if (event.keyCode === 38) {
-      if (state.size < 100) {
-        state.size++;
-      }
+  } else if (event.keyCode === 38) {
+    if (state.size < 100) {
+      state.size++;
     }
+  }
 }

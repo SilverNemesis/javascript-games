@@ -35,7 +35,7 @@ function App() {
       if (previousTimeRef.current !== undefined) {
         props.deltaTime = currentTime - previousTimeRef.current;
 
-        const rect = canvas.getBoundingClientRect()
+        const rect = canvas.getBoundingClientRect();
         canvas.width = rect.width * window.devicePixelRatio;
         canvas.height = rect.height * window.devicePixelRatio;
 
@@ -44,6 +44,10 @@ function App() {
           props.frameCount = 0;
           props.width = canvas.width;
           props.height = canvas.height;
+
+          if (state.resize) {
+            state.resize(props);
+          }
         }
 
         const t0 = performance.now();
