@@ -162,6 +162,18 @@ class PlayerComponent {
 
     this.x += this.speedX;
     this.y += this.speedY;
+
+    if (this.x < this.radius) {
+      this.x = this.radius;
+    } else if (this.x + this.radius > screen.x) {
+      this.x = screen.x - this.radius;
+    }
+
+    if (this.y < this.radius) {
+      this.y = this.radius;
+    } else if (this.y + this.radius > screen.y) {
+      this.y = screen.y - this.radius;
+    }
   }
 
   render(ctx) {
