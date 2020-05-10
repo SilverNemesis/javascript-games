@@ -2,19 +2,29 @@ import { collide, boundingRectangle } from '../lib/collision';
 
 let state = {}
 
+const screen = {
+  x: 320,
+  y: 180
+};
+
+function adjustScale(width, height) {
+  state.width = width;
+  state.height = height;
+  state.scale = Math.min(width / screen.x, height / screen.y);
+  state.offsetX = (width - screen.x * state.scale) / 2;
+  state.offsetY = (height - screen.y * state.scale) / 2;
+}
+
 export default function initialize({ width, height }) {
   state = {
-    width,
-    height,
-    scaleX: Math.floor(width / 320),
-    scaleY: Math.floor(height / 180),
     paused: false,
     frameCount: 0,
     obstacles: [],
     player: new PlayerComponent(10, 75, 30, 30, 'red'),
-    score: new TextComponent(220, 25, 'white', 'Consolas', 15),
+    score: new TextComponent(screen.x, 0, 'white', 'Consolas', 15),
     keyState: {}
   };
+  adjustScale(width, height);
   return {
     name: 'dodge',
     resize,
@@ -26,10 +36,7 @@ export default function initialize({ width, height }) {
 }
 
 function resize({ width, height }) {
-  state.width = width;
-  state.height = height;
-  state.scaleX = Math.floor(width / 320);
-  state.scaleY = Math.floor(height / 180);
+  adjustScale(width, height);
 }
 
 function update() {
@@ -41,9 +48,9 @@ function update() {
     if ((state.frameCount % 150) === 1) {
       const h = getRandomNumber(20, 100);
       const gap = getRandomNumber(50, 100);
-      const w = Math.floor(state.width / state.scaleX);
+      const w = Math.floor(state.width / state.scale);
       obstacles.push(new ObstacleComponent(w, 0, 10, h, 'green'));
-      obstacles.push(new ObstacleComponent(w, h + gap, 10, w - h - gap, 'green'));
+      obstacles.push(new ObstacleComponent(w, h + gap, 10, screen.y - h - gap, 'green'));
     }
 
     player.update(keyState);
@@ -69,6 +76,13 @@ function render({ ctx }) {
 
   ctx.clearRect(0, 0, width, height);
 
+  ctx.fillStyle = '#111';
+  ctx.fillRect(state.offsetX, state.offsetY, screen.x * state.scale, screen.y * state.scale);
+
+  ctx.save();
+  ctx.rect(state.offsetX, state.offsetY, screen.x * state.scale, screen.y * state.scale);
+  ctx.clip();
+
   player.render(ctx);
 
   for (let i = 0; i < obstacles.length; i += 1) {
@@ -76,6 +90,8 @@ function render({ ctx }) {
   }
 
   score.render(ctx);
+
+  ctx.restore();
 }
 
 function handleKeyDown(event) {
@@ -101,9 +117,14 @@ class TextComponent {
   }
 
   render(ctx) {
-    ctx.font = (this.fontSize * Math.min(state.scaleX, state.scaleY)).toFixed(0) + 'px ' + this.fontName;
+    ctx.font = (this.fontSize * state.scale).toFixed(0) + 'px ' + this.fontName;
     ctx.fillStyle = this.color;
-    ctx.fillText(this.text, this.x * state.scaleX, this.y * state.scaleY);
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'top';
+    let { x, y } = this;
+    x = x * state.scale + state.offsetX;
+    y = y * state.scale + state.offsetY;
+    ctx.fillText(this.text, x, y);
   }
 }
 
@@ -144,7 +165,12 @@ class PlayerComponent {
 
   render(ctx) {
     ctx.fillStyle = this.color;
-    ctx.fillRect(this.x * state.scaleX, this.y * state.scaleY, this.width * state.scaleX, this.height * state.scaleY);
+    let { x, y, width, height } = this;
+    x = x * state.scale + state.offsetX;
+    y = y * state.scale + state.offsetY;
+    width *= state.scale;
+    height *= state.scale;
+    ctx.fillRect(x, y, width, height);
   }
 
   getCollisionBounds() {
@@ -171,7 +197,12 @@ class ObstacleComponent {
 
   render(ctx) {
     ctx.fillStyle = this.color;
-    ctx.fillRect(this.x * state.scaleX, this.y * state.scaleY, this.width * state.scaleX, this.height * state.scaleY);
+    let { x, y, width, height } = this;
+    x = x * state.scale + state.offsetX;
+    y = y * state.scale + state.offsetY;
+    width *= state.scale;
+    height *= state.scale;
+    ctx.fillRect(x, y, width, height);
   }
 
   getCollisionBounds() {
