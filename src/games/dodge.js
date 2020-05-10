@@ -1,4 +1,4 @@
-import { collideRectangles } from '../lib/collision';
+import { collide, boundingRectangle } from '../lib/collision';
 
 let state = {}
 
@@ -54,10 +54,10 @@ function update() {
 
     score.text = 'SCORE: ' + state.frameCount;
 
-    const rect = player.getRectangle();
+    const rect = player.getCollisionBounds();
 
     for (let i = 0; i < obstacles.length; i += 1) {
-      if (collideRectangles(rect, obstacles[i].getRectangle())) {
+      if (collide(rect, obstacles[i].getCollisionBounds())) {
         state.paused = true;
       }
     }
@@ -147,13 +147,8 @@ class PlayerComponent {
     ctx.fillRect(this.x * state.scaleX, this.y * state.scaleY, this.width * state.scaleX, this.height * state.scaleY);
   }
 
-  getRectangle() {
-    return {
-      x1: this.x,
-      y1: this.y,
-      x2: this.x + this.width,
-      y2: this.y + this.height
-    };
+  getCollisionBounds() {
+    return boundingRectangle(this.x, this.y, this.x + this.width, this.y + this.height);
   }
 }
 
@@ -179,12 +174,7 @@ class ObstacleComponent {
     ctx.fillRect(this.x * state.scaleX, this.y * state.scaleY, this.width * state.scaleX, this.height * state.scaleY);
   }
 
-  getRectangle() {
-    return {
-      x1: this.x,
-      y1: this.y,
-      x2: this.x + this.width,
-      y2: this.y + this.height
-    };
+  getCollisionBounds() {
+    return boundingRectangle(this.x, this.y, this.x + this.width, this.y + this.height);
   }
 }
