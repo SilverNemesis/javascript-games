@@ -11,6 +11,10 @@ let gameState = {};
 const state = {
   totalFrameTime: 0,
   frameCount: 0,
+  paused: true
+};
+
+const sharedState = {
   ctx: null,
   deltaTime: 0,
   width: 0,
@@ -25,25 +29,25 @@ function App() {
   React.useEffect(() => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect()
-    state.ctx = canvas.getContext('2d');
-    state.width = rect.width * window.devicePixelRatio;
-    state.height = rect.height * window.devicePixelRatio;
+    sharedState.ctx = canvas.getContext('2d');
+    sharedState.width = rect.width * window.devicePixelRatio;
+    sharedState.height = rect.height * window.devicePixelRatio;
 
-    gameState = games[gameIndex](state);
+    gameState = games[gameIndex](sharedState);
 
     const animate = currentTime => {
       if (previousTimeRef.current !== undefined) {
-        state.deltaTime = currentTime - previousTimeRef.current;
+        sharedState.deltaTime = currentTime - previousTimeRef.current;
 
         const rect = canvas.getBoundingClientRect();
         canvas.width = rect.width * window.devicePixelRatio;
         canvas.height = rect.height * window.devicePixelRatio;
 
-        if (canvas.width !== state.width || canvas.height !== state.height) {
+        if (canvas.width !== sharedState.width || canvas.height !== sharedState.height) {
           state.totalFrameTime = 0;
           state.frameCount = 0;
-          state.width = canvas.width;
-          state.height = canvas.height;
+          sharedState.width = canvas.width;
+          sharedState.height = canvas.height;
 
           if (gameState.resize) {
             gameState.resize();
@@ -52,7 +56,7 @@ function App() {
 
         const t0 = performance.now();
 
-        if (gameState.update) {
+        if (gameState.update && !state.paused) {
           gameState.update();
         }
 
@@ -72,13 +76,11 @@ function App() {
       requestRef.current = requestAnimationFrame(animate);
     }
 
-    window.addEventListener('click', handleClick);
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
 
     requestRef.current = requestAnimationFrame(animate);
     return () => {
-      window.removeEventListener('click', handleClick);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       cancelAnimationFrame(requestRef.current);
@@ -92,19 +94,16 @@ function App() {
   );
 }
 
-function handleClick(event) {
-  if (gameState.handleClick) {
-    gameState.handleClick(event);
-  }
-}
-
 function handleKeyDown(event) {
-  if (event.keyCode === 9) {
+  if (event.code === 'PageDown') {
     event.preventDefault();
-    gameIndex = (gameIndex + 1) % games.length;
-    gameState = games[gameIndex](state);
-    state.totalFrameTime = 0;
-    state.frameCount = 0;
+    nextScene();
+  } else if (event.code === 'PageUp') {
+    event.preventDefault();
+    previousScene();
+  } else if (event.code === 'Escape') {
+    event.preventDefault();
+    state.paused = !state.paused;
   }
   else {
     if (gameState.handleKeyDown) {
@@ -120,7 +119,8 @@ function handleKeyUp(event) {
 }
 
 function drawFrameTime() {
-  const { ctx, width, totalFrameTime, frameCount } = state;
+  const { totalFrameTime, frameCount } = state;
+  const { ctx, width } = sharedState;
   const text = gameState.name + ' (' + (totalFrameTime / frameCount).toFixed(2) + ' ms)';
   ctx.fillStyle = 'white';
   ctx.font = '20px monospace';
@@ -131,6 +131,20 @@ function drawFrameTime() {
   ctx.shadowColor = 'rgba(0.2,0.2,0.2,1.0)';
   ctx.shadowBlur = 4;
   ctx.fillText(text, width / 2, 0);
+}
+
+function previousScene() {
+  gameIndex = (gameIndex + games.length - 1) % games.length;
+  gameState = games[gameIndex](sharedState);
+  state.totalFrameTime = 0;
+  state.frameCount = 0;
+}
+
+function nextScene() {
+  gameIndex = (gameIndex + 1) % games.length;
+  gameState = games[gameIndex](sharedState);
+  state.totalFrameTime = 0;
+  state.frameCount = 0;
 }
 
 export default App;
