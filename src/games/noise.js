@@ -1,6 +1,10 @@
 let state = {}
 
-export default function initialize({ ctx, width, height }) {
+let applicationState = {};
+
+export default function initialize(props) {
+  applicationState = props;
+  const { ctx, width, height } = applicationState;
   state = {
     size: 1,
     width,
@@ -15,13 +19,15 @@ export default function initialize({ ctx, width, height }) {
   };
 }
 
-function resize({ ctx, width, height }) {
+function resize() {
+  const { ctx, width, height } = applicationState;
   state.width = width;
   state.height = height;
   state.image = ctx.createImageData(width, height);
 }
 
-function render({ ctx }) {
+function render() {
+  const { ctx } = applicationState;
   const { size, width, height } = state;
   const buffer = state.image.data;
 
@@ -44,11 +50,11 @@ function render({ ctx }) {
 }
 
 function handleKeyDown(event) {
-  if (event.keyCode === 40) {
+  if (event.code === 'ArrowDown') {
     if (state.size > 1) {
       state.size--;
     }
-  } else if (event.keyCode === 38) {
+  } else if (event.code === 'ArrowUp') {
     if (state.size < 100) {
       state.size++;
     }

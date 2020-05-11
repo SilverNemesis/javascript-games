@@ -6,16 +6,15 @@ const games = [dodge, noise];
 
 let gameIndex = 0;
 
-let state = {};
+let gameState = {};
 
-const props = {
+const state = {
   totalFrameTime: 0,
   frameCount: 0,
   ctx: null,
   deltaTime: 0,
   width: 0,
-  height: 0,
-  image: null
+  height: 0
 };
 
 function App() {
@@ -26,46 +25,47 @@ function App() {
   React.useEffect(() => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect()
-    props.ctx = canvas.getContext('2d');
-    props.width = rect.width * window.devicePixelRatio;
-    props.height = rect.height * window.devicePixelRatio;
+    state.ctx = canvas.getContext('2d');
+    state.width = rect.width * window.devicePixelRatio;
+    state.height = rect.height * window.devicePixelRatio;
 
-    state = games[gameIndex](props);
+    gameState = games[gameIndex](state);
 
     const animate = currentTime => {
       if (previousTimeRef.current !== undefined) {
-        props.deltaTime = currentTime - previousTimeRef.current;
+        state.deltaTime = currentTime - previousTimeRef.current;
 
         const rect = canvas.getBoundingClientRect();
         canvas.width = rect.width * window.devicePixelRatio;
         canvas.height = rect.height * window.devicePixelRatio;
 
-        if (canvas.width !== props.width || canvas.height !== props.height) {
-          props.totalFrameTime = 0;
-          props.frameCount = 0;
-          props.width = canvas.width;
-          props.height = canvas.height;
+        if (canvas.width !== state.width || canvas.height !== state.height) {
+          state.totalFrameTime = 0;
+          state.frameCount = 0;
+          state.width = canvas.width;
+          state.height = canvas.height;
 
-          if (state.resize) {
-            state.resize(props);
+          if (gameState.resize) {
+            gameState.resize();
           }
         }
 
         const t0 = performance.now();
 
-        if (state.update) {
-          state.update(props);
+        if (gameState.update) {
+          gameState.update();
         }
 
-        if (state.render) {
-          state.render(props);
+        if (gameState.render) {
+          gameState.render();
         }
 
         const t1 = performance.now();
-        props.totalFrameTime += t1 - t0;
-        props.frameCount++;
 
-        drawFrameTime(props);
+        state.totalFrameTime += t1 - t0;
+        state.frameCount++;
+
+        drawFrameTime();
       }
 
       previousTimeRef.current = currentTime;
@@ -87,14 +87,14 @@ function App() {
 
   return (
     <div className="screen">
-      <canvas className="canvas" ref={canvasRef}></canvas>
+      <canvas id="canvas" ref={canvasRef}></canvas>
     </div>
   );
 }
 
 function handleClick(event) {
-  if (state.handleClick) {
-    state.handleClick(event);
+  if (gameState.handleClick) {
+    gameState.handleClick(event);
   }
 }
 
@@ -102,25 +102,26 @@ function handleKeyDown(event) {
   if (event.keyCode === 9) {
     event.preventDefault();
     gameIndex = (gameIndex + 1) % games.length;
-    state = games[gameIndex](props);
-    props.totalFrameTime = 0;
-    props.frameCount = 0;
+    gameState = games[gameIndex](state);
+    state.totalFrameTime = 0;
+    state.frameCount = 0;
   }
   else {
-    if (state.handleKeyDown) {
-      state.handleKeyDown(event);
+    if (gameState.handleKeyDown) {
+      gameState.handleKeyDown(event);
     }
   }
 }
 
 function handleKeyUp(event) {
-  if (state.handleKeyUp) {
-    state.handleKeyUp(event);
+  if (gameState.handleKeyUp) {
+    gameState.handleKeyUp(event);
   }
 }
 
-function drawFrameTime({ ctx, width, totalFrameTime, frameCount }) {
-  const text = state.name + ' (' + (totalFrameTime / frameCount).toFixed(2) + ' ms)';
+function drawFrameTime() {
+  const { ctx, width, totalFrameTime, frameCount } = state;
+  const text = gameState.name + ' (' + (totalFrameTime / frameCount).toFixed(2) + ' ms)';
   ctx.fillStyle = 'white';
   ctx.font = '20px monospace';
   ctx.textAlign = 'center';

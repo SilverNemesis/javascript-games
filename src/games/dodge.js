@@ -2,6 +2,8 @@ import { collide, boundingRectangle, boundingCircle } from '../lib/collision';
 
 let state = {}
 
+let applicationState = {};
+
 const screen = {
   x: 320,
   y: 180
@@ -15,13 +17,15 @@ function adjustScale(width, height) {
   state.offsetY = (height - screen.y * state.scale) / 2;
 }
 
-export default function initialize({ width, height }) {
+export default function initialize(props) {
+  applicationState = props;
+  const { width, height } = applicationState;
   state = {
-    paused: false,
+    gameOver: false,
     frameCount: 0,
     obstacles: [],
     player: new PlayerComponent(15, 75, 15, 'red'),
-    score: new TextComponent(screen.x, 0, 'white', 'Consolas', 15),
+    score: new TextComponent(screen.x, 0, 'white', 'Consolas', 15, 'SCORE: 0'),
     keyState: {}
   };
   adjustScale(width, height);
@@ -35,14 +39,15 @@ export default function initialize({ width, height }) {
   };
 }
 
-function resize({ width, height }) {
+function resize() {
+  const { width, height } = applicationState;
   adjustScale(width, height);
 }
 
 function update() {
   const { player, obstacles, score, keyState } = state;
 
-  if (!state.paused) {
+  if (!state.gameOver) {
     state.frameCount++;
 
     if ((state.frameCount % 150) === 1) {
@@ -67,13 +72,14 @@ function update() {
 
     for (let i = 0; i < obstacles.length; i += 1) {
       if (collide(rect, obstacles[i].getCollisionBounds())) {
-        state.paused = true;
+        state.gameOver = true;
       }
     }
   }
 }
 
-function render({ ctx }) {
+function render() {
+  const { ctx } = applicationState;
   const { width, height, player, obstacles, score } = state;
 
   ctx.clearRect(0, 0, width, height);
