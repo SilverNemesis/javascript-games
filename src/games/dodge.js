@@ -73,8 +73,11 @@ function update() {
     for (let i = 0; i < obstacles.length; i += 1) {
       if (collide(rect, obstacles[i].getCollisionBounds())) {
         state.gameOver = true;
-        applicationState.showMessage(['GAME OVER']);
       }
+    }
+
+    if (state.gameOver) {
+      applicationState.showMessage(['GAME OVER']);
     }
   }
 }
