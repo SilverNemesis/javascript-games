@@ -1,4 +1,5 @@
 import React from 'react';
+import Message from './Message';
 import dodge from '../games/dodge';
 import noise from '../games/noise';
 
@@ -25,6 +26,32 @@ function App() {
   const canvasRef = React.useRef(null);
   const requestRef = React.useRef(null);
   const previousTimeRef = React.useRef(0);
+
+  const [message, setMessage] = React.useState();
+
+  const onClickMessage = (event) => {
+    event.preventDefault();
+    if (state.messageTimer) {
+      cancelMessage();
+    }
+  };
+
+  const showMessage = (message) => {
+    setMessage(message);
+    state.messageTimer = setTimeout(clearMessage, 10000);
+  }
+
+  const clearMessage = () => {
+    setMessage();
+    state.messageTimer = undefined;
+  }
+
+  const cancelMessage = () => {
+    clearTimeout(state.messageTimer);
+    clearMessage();
+  }
+
+  sharedState.showMessage = showMessage;
 
   const handleKeyDown = (event) => {
     if (event.code === 'PageDown') {
@@ -114,6 +141,7 @@ function App() {
   return (
     <div className="screen">
       <canvas id="canvas" ref={canvasRef}></canvas>
+      <Message message={message} onClick={onClickMessage} />
     </div>
   );
 }
