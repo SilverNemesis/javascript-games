@@ -25,7 +25,7 @@ export default function initialize(props) {
     frameCount: 0,
     obstacles: [],
     player: new PlayerComponent(15, 75, 15, 'red'),
-    score: new TextComponent(screen.x, 0, 'white', 'Consolas', 15, 'SCORE: 0'),
+    score: new TextComponent(screen.x, 0, 'white', 'Consolas', 8, 'SCORE: 0'),
     keyState: {}
   };
   adjustScale(width, height);
@@ -73,6 +73,7 @@ function update() {
     for (let i = 0; i < obstacles.length; i += 1) {
       if (collide(rect, obstacles[i].getCollisionBounds())) {
         state.gameOver = true;
+        applicationState.showMessage(['GAME OVER']);
       }
     }
   }
