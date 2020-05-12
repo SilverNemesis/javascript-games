@@ -78,6 +78,13 @@ function update() {
 
     if (state.gameOver) {
       applicationState.showMessage(['GAME OVER']);
+      applicationState.setOptions([
+        {
+          type: 'function',
+          name: 'RESTART',
+          function: reset
+        }
+      ]);
     }
   }
 }
@@ -104,6 +111,15 @@ function render() {
   score.render(ctx);
 
   ctx.restore();
+}
+
+function reset() {
+  state.gameOver = false;
+  state.frameCount = 0;
+  state.obstacles = [];
+  state.player.x = 15;
+  state.player.y = 75;
+  applicationState.setOptions();
 }
 
 function handleKeyDown(event) {
