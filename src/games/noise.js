@@ -9,13 +9,16 @@ export default function initialize(props) {
     size: 1,
     width,
     height,
-    image: ctx.createImageData(width, height)
+    image: ctx.createImageData(width, height),
+    keyState: {}
   };
   return {
     name: 'noise',
     resize,
+    update,
     render,
-    handleKeyDown
+    handleKeyDown,
+    handleKeyUp
   };
 }
 
@@ -26,9 +29,21 @@ function resize() {
   state.image = ctx.createImageData(width, height);
 }
 
-function render() {
-  const { ctx } = applicationState;
-  const { size, width, height } = state;
+function update() {
+  const { size, width, height, keyState } = state;
+
+  if (keyState['ArrowDown']) {
+    if (state.size > 1) {
+      state.size--;
+    }
+  }
+
+  if (keyState['ArrowUp']) {
+    if (state.size < 100) {
+      state.size++;
+    }
+  }
+
   const buffer = state.image.data;
 
   for (let y = 0; y < height; y += size) {
@@ -45,18 +60,17 @@ function render() {
       }
     }
   }
+}
 
+function render() {
+  const { ctx } = applicationState;
   ctx.putImageData(state.image, 0, 0);
 }
 
 function handleKeyDown(event) {
-  if (event.code === 'ArrowDown') {
-    if (state.size > 1) {
-      state.size--;
-    }
-  } else if (event.code === 'ArrowUp') {
-    if (state.size < 100) {
-      state.size++;
-    }
-  }
+  state.keyState[event.code] = true;
+}
+
+function handleKeyUp(event) {
+  state.keyState[event.code] = false;
 }
