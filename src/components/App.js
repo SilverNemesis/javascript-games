@@ -66,10 +66,10 @@ function App() {
     state.messageTimer = undefined;
   }
 
-  const cancelMessage = () => {
+  const cancelMessage = React.useCallback(() => {
     clearTimeout(state.messageTimer);
     clearMessage();
-  }
+  }, []);
 
   sharedState.showMessage = showMessage;
   sharedState.setOptions = setOptions;
@@ -86,6 +86,7 @@ function App() {
     } else if (event.code === 'Escape') {
       event.preventDefault();
       state.paused = !state.paused;
+      cancelMessage();
       forceUpdate();
     }
     else {
@@ -93,7 +94,7 @@ function App() {
         gameState.handleKeyDown(event);
       }
     }
-  }, [forceUpdate]);
+  }, [forceUpdate, cancelMessage]);
 
   const handleKeyUp = (event) => {
     if (gameState.handleKeyUp) {
