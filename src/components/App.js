@@ -1,5 +1,6 @@
 import React from 'react';
 import Message from './Message';
+import Menu from './Menu';
 import dodge from '../games/dodge';
 import noise from '../games/noise';
 
@@ -27,7 +28,26 @@ function App() {
   const requestRef = React.useRef(null);
   const previousTimeRef = React.useRef(0);
 
+  const [, setUpdate] = React.useState(0);
   const [message, setMessage] = React.useState();
+  const [title, setTitle] = React.useState();
+  const [options, setOptions] = React.useState();
+
+  function previousScene() {
+    gameIndex = (gameIndex + games.length - 1) % games.length;
+    gameState = games[gameIndex](sharedState);
+    setTitle(gameState.name);
+    state.totalFrameTime = 0;
+    state.frameCount = 0;
+  }
+
+  function nextScene() {
+    gameIndex = (gameIndex + 1) % games.length;
+    gameState = games[gameIndex](sharedState);
+    setTitle(gameState.name);
+    state.totalFrameTime = 0;
+    state.frameCount = 0;
+  }
 
   const onClickMessage = (event) => {
     event.preventDefault();
@@ -52,8 +72,11 @@ function App() {
   }
 
   sharedState.showMessage = showMessage;
+  sharedState.setOptions = setOptions;
 
-  const handleKeyDown = (event) => {
+  const forceUpdate = React.useCallback(() => { setUpdate(x => x + 1); }, []);
+
+  const handleKeyDown = React.useCallback((event) => {
     if (event.code === 'PageDown') {
       event.preventDefault();
       nextScene();
@@ -63,13 +86,14 @@ function App() {
     } else if (event.code === 'Escape') {
       event.preventDefault();
       state.paused = !state.paused;
+      forceUpdate();
     }
     else {
       if (gameState.handleKeyDown) {
         gameState.handleKeyDown(event);
       }
     }
-  };
+  }, [forceUpdate]);
 
   const handleKeyUp = (event) => {
     if (gameState.handleKeyUp) {
@@ -85,6 +109,7 @@ function App() {
     sharedState.height = rect.height * window.devicePixelRatio;
 
     gameState = games[gameIndex](sharedState);
+    setTitle(gameState.name);
 
     const animate = currentTime => {
       if (previousTimeRef.current !== undefined) {
@@ -136,12 +161,30 @@ function App() {
       window.removeEventListener('keyup', handleKeyUp);
       cancelAnimationFrame(requestRef.current);
     }
-  }, [canvasRef]);
+  }, [canvasRef, handleKeyDown]);
+
+  const onChange = (option, value) => {
+    if (value !== option.value) {
+      gameState.setOption(option, value);
+      forceUpdate();
+    }
+  };
+
+  const onClickPrevious = (event) => {
+    event.preventDefault();
+    nextScene();
+  };
+
+  const onClickNext = (event) => {
+    event.preventDefault();
+    previousScene();
+  };
 
   return (
     <div className="screen">
       <canvas id="canvas" ref={canvasRef}></canvas>
       <Message message={message} onClick={onClickMessage} />
+      <Menu show={state.paused} onClickPrevious={onClickPrevious} onClickNext={onClickNext} onChange={onChange} title={title} options={options} />
     </div>
   );
 }
@@ -159,20 +202,6 @@ function drawFrameTime() {
   ctx.shadowColor = 'rgba(0.2,0.2,0.2,1.0)';
   ctx.shadowBlur = 4;
   ctx.fillText(text, width / 2, 0);
-}
-
-function previousScene() {
-  gameIndex = (gameIndex + games.length - 1) % games.length;
-  gameState = games[gameIndex](sharedState);
-  state.totalFrameTime = 0;
-  state.frameCount = 0;
-}
-
-function nextScene() {
-  gameIndex = (gameIndex + 1) % games.length;
-  gameState = games[gameIndex](sharedState);
-  state.totalFrameTime = 0;
-  state.frameCount = 0;
 }
 
 export default App;
