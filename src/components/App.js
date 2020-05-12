@@ -26,6 +26,30 @@ function App() {
   const requestRef = React.useRef(null);
   const previousTimeRef = React.useRef(0);
 
+  const handleKeyDown = (event) => {
+    if (event.code === 'PageDown') {
+      event.preventDefault();
+      nextScene();
+    } else if (event.code === 'PageUp') {
+      event.preventDefault();
+      previousScene();
+    } else if (event.code === 'Escape') {
+      event.preventDefault();
+      state.paused = !state.paused;
+    }
+    else {
+      if (gameState.handleKeyDown) {
+        gameState.handleKeyDown(event);
+      }
+    }
+  };
+
+  const handleKeyUp = (event) => {
+    if (gameState.handleKeyUp) {
+      gameState.handleKeyUp(event);
+    }
+  };
+
   React.useEffect(() => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect()
@@ -92,30 +116,6 @@ function App() {
       <canvas id="canvas" ref={canvasRef}></canvas>
     </div>
   );
-}
-
-function handleKeyDown(event) {
-  if (event.code === 'PageDown') {
-    event.preventDefault();
-    nextScene();
-  } else if (event.code === 'PageUp') {
-    event.preventDefault();
-    previousScene();
-  } else if (event.code === 'Escape') {
-    event.preventDefault();
-    state.paused = !state.paused;
-  }
-  else {
-    if (gameState.handleKeyDown) {
-      gameState.handleKeyDown(event);
-    }
-  }
-}
-
-function handleKeyUp(event) {
-  if (gameState.handleKeyUp) {
-    gameState.handleKeyUp(event);
-  }
 }
 
 function drawFrameTime() {
