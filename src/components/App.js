@@ -37,6 +37,7 @@ function App() {
     gameIndex = (gameIndex + games.length - 1) % games.length;
     gameState = games[gameIndex](sharedState);
     setTitle(gameState.name);
+    setOptions(gameState.options);
     state.totalFrameTime = 0;
     state.frameCount = 0;
   }
@@ -45,6 +46,7 @@ function App() {
     gameIndex = (gameIndex + 1) % games.length;
     gameState = games[gameIndex](sharedState);
     setTitle(gameState.name);
+    setOptions(gameState.options);
     state.totalFrameTime = 0;
     state.frameCount = 0;
   }
@@ -111,6 +113,7 @@ function App() {
 
     gameState = games[gameIndex](sharedState);
     setTitle(gameState.name);
+    setOptions(gameState.options);
 
     const animate = currentTime => {
       if (previousTimeRef.current !== undefined) {
