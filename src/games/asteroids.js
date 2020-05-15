@@ -1,4 +1,6 @@
 import fire from '../sounds/fire.wav'
+import beat1 from '../sounds/beat1.wav'
+import beat2 from '../sounds/beat2.wav'
 
 let state;
 
@@ -14,7 +16,9 @@ const maxSpeed = 6;
 const fireRate = 150;
 
 const sounds = {
-  fire: loadSound(fire, 10)
+  fire: loadSound(fire, 10),
+  beat1: loadSound(beat1, 1),
+  beat2: loadSound(beat2, 1)
 };
 
 function adjustScale(width, height) {
@@ -40,19 +44,30 @@ export default function initialize(props) {
     player: new Player(),
     bullets: [],
     asteroids: [],
+    ambientSound: new AmbientSound([sounds.beat1, sounds.beat2], 800, (count, delay) => {
+      if (count > 9) {
+        if (delay > 200) {
+          return delay - 50;
+        }
+      }
+      return delay;
+    }),
+    isPaused: true,
     keyState: {}
   }
   for (let i = 0; i < 4; i++) {
     state.asteroids.push(new Asteroid(getRandomNumber(0, screen.width), getRandomNumber(0, screen.height), getRandomNumber(0, 360), 150));
   }
   adjustScale(width, height);
+  setTimeout(state.ambientSound.start, 100);
   return {
     name: 'asteroids',
     resize,
     update,
     render,
     handleKeyDown,
-    handleKeyUp
+    handleKeyUp,
+    handlePause
   }
 }
 
@@ -62,6 +77,7 @@ function resize() {
 }
 
 function update() {
+  state.isPaused = false;
   state.player.update();
   state.bullets = state.bullets.filter(x => x.frameCount < 75);
   for (let i = 0; i < state.bullets.length; i++) {
@@ -127,6 +143,10 @@ function handleKeyUp(event) {
   state.keyState[event.code] = false;
 }
 
+function handlePause(isPaused) {
+  state.ambientSound.isPaused = isPaused;
+}
+
 function getRandomNumber(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
@@ -152,6 +172,55 @@ function loadSound(name, count) {
 function playSound(sound) {
   sound.samples[sound.index].play();
   sound.index = (sound.index + 1) % sound.samples.length;
+}
+
+class AmbientSound {
+  constructor(sounds, maxDelay, updateDelay) {
+    this.sounds = sounds;
+    this.maxDelay = maxDelay;
+    this.updateDelay = updateDelay;
+    this.isPlaying = false;
+    this.isPaused = false;
+    this.start = this.start.bind(this);
+    this.stop = this.stop.bind(this);
+    this.playNextSound = this.playNextSound.bind(this);
+  }
+
+  start() {
+    if (!this.isPlaying) {
+      this.stop();
+    }
+    this.isPlaying = true;
+    this.isPaused = state.isPaused;
+    this.count = 0;
+    this.index = 0;
+    this.delay = this.maxDelay;
+    this.playNextSound();
+  }
+
+  stop() {
+    if (this.isPlaying) {
+      clearTimeout(this.timeout);
+    }
+    this.isPlaying = false;
+  }
+
+  playNextSound() {
+    if (!this.isPlaying) {
+      return;
+    }
+    const { delay, index } = this;
+    if (!this.isPaused) {
+      this.count++;
+      this.delay = this.updateDelay(this.count, this.delay);
+      if (this.delay !== delay) {
+        this.count = 0;
+      }
+      this.index = (this.index + 1) % this.sounds.length;
+      playSound(this.sounds[index])
+    }
+    this.timeout = setTimeout(this.playNextSound, delay);
+  }
 }
 
 class Player {
