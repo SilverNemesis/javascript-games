@@ -9,6 +9,8 @@ const screen = {
 
 const maxSpeed = 6;
 
+const fireRate = 150;
+
 function adjustScale(width, height) {
   state.width = width;
   state.height = height;
@@ -21,7 +23,8 @@ const keyMap = {
   left: 'KeyA',
   right: 'KeyD',
   up: 'KeyW',
-  down: 'KeyS'
+  down: 'KeyS',
+  fire: 'Space'
 };
 
 export default function initialize(props) {
@@ -29,6 +32,7 @@ export default function initialize(props) {
   const { width, height } = applicationState;
   state = {
     player: new Player(),
+    bullets: [],
     keyState: {}
   }
   adjustScale(width, height);
@@ -49,6 +53,10 @@ function resize() {
 
 function update() {
   state.player.update();
+  state.bullets = state.bullets.filter(x => x.frameCount < 75);
+  for (let i = 0; i < state.bullets.length; i++) {
+    state.bullets[i].update();
+  }
 }
 
 function render() {
@@ -64,6 +72,10 @@ function render() {
   ctx.clip();
 
   state.player.render();
+
+  for (let i = 0; i < state.bullets.length; i++) {
+    state.bullets[i].render();
+  }
 
   ctx.restore();
 }
@@ -125,6 +137,11 @@ class Player {
 
     const dx = Math.cos((this.rotation - 90) * (Math.PI / 180));
     const dy = Math.sin((this.rotation - 90) * (Math.PI / 180));
+
+    if (state.keyState[keyMap.fire] && this.fireDelay === 0) {
+      state.bullets.push(new Bullet(this.x + dx * 7.0, this.y + dy * 7.0, dx * 12.0, dy * 12.0));
+      this.fireDelay = fireRate;
+    }
 
     const accelerationVector = {
       x: delta * 0.2 * dx,
@@ -201,6 +218,55 @@ class Player {
     ctx.lineTo(0, 7)
     ctx.closePath()
     ctx.stroke()
+    ctx.restore()
+  }
+}
+
+class Bullet {
+  constructor(x, y, dx, dy) {
+    this.x = x;
+    this.y = y;
+    this.dx = dx;
+    this.dy = dy;
+    this.frameCount = 0;
+  }
+
+  update() {
+    const delta = applicationState.deltaTime / 16;
+
+    const { width, height } = screen;
+
+    this.x += delta * this.dx
+    this.y += delta * this.dy
+
+    if (this.x > width) {
+      this.x -= width
+    } else if (this.x < 0) {
+      this.x += width
+    }
+
+    if (this.y > height) {
+      this.y -= height
+    } else if (this.y < 0) {
+      this.y += height
+    }
+
+    this.frameCount++;
+  }
+
+  render() {
+    renderWrap(applicationState.ctx, this.x, this.y, 1, this._render);
+  }
+
+  _render(ctx, x, y) {
+    ctx.save()
+    ctx.translate(screen.x + x * screen.scale, screen.y + y * screen.scale)
+    ctx.scale(screen.scale, screen.scale);
+    ctx.strokeStyle = 'white'
+    ctx.lineWidth = 1
+    ctx.beginPath();
+    ctx.arc(0, 0, 1, 0, 2 * Math.PI);
+    ctx.stroke();
     ctx.restore()
   }
 }
