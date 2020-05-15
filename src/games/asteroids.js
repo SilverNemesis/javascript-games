@@ -1,3 +1,5 @@
+import fire from '../sounds/fire.wav'
+
 let state;
 
 let applicationState = {};
@@ -10,6 +12,10 @@ const screen = {
 const maxSpeed = 6;
 
 const fireRate = 150;
+
+const sounds = {
+  fire: loadSound(fire, 10)
+};
 
 function adjustScale(width, height) {
   state.width = width;
@@ -132,6 +138,22 @@ function angleToPoint(angle, radius) {
   }
 }
 
+function loadSound(name, count) {
+  const samples = [];
+  for (let i = 0; i < count; i++) {
+    samples.push(new Audio(name));
+  }
+  return {
+    index: 0,
+    samples
+  }
+}
+
+function playSound(sound) {
+  sound.samples[sound.index].play();
+  sound.index = (sound.index + 1) % sound.samples.length;
+}
+
 class Player {
   constructor() {
     this.x = screen.width / 2;
@@ -161,6 +183,7 @@ class Player {
     const dy = Math.sin((this.rotation - 90) * (Math.PI / 180));
 
     if (state.keyState[keyMap.fire] && this.fireDelay === 0) {
+      playSound(sounds.fire);
       state.bullets.push(new Bullet(this.x + dx * 7.0, this.y + dy * 7.0, dx * 12.0, dy * 12.0));
       this.fireDelay = fireRate;
     }
