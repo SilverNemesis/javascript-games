@@ -1,3 +1,4 @@
+import thrust from '../sounds/thrust.wav'
 import fire from '../sounds/fire.wav'
 import beat1 from '../sounds/beat1.wav'
 import beat2 from '../sounds/beat2.wav'
@@ -16,6 +17,7 @@ const maxSpeed = 6;
 const fireRate = 150;
 
 const sounds = {
+  thrust: loadSound(thrust, 10),
   fire: loadSound(fire, 10),
   beat1: loadSound(beat1, 1),
   beat2: loadSound(beat2, 1)
@@ -173,6 +175,26 @@ function playSound(sound) {
   sound.index = (sound.index + 1) % sound.samples.length;
 }
 
+function startSoundLoop(sound, delay) {
+  if (!sound.timeout) {
+    sound.delay = delay;
+    sound.continueSoundLoop = continueSoundLoop.bind(sound);
+    sound.continueSoundLoop();
+  }
+}
+
+function continueSoundLoop() {
+  playSound(this);
+  this.timeout = setTimeout(this.continueSoundLoop, this.delay);
+}
+
+function stopSoundLoop(sound) {
+  if (sound.timeout) {
+    clearInterval(sound.timeout);
+    sound.timeout = undefined;
+  }
+}
+
 class AmbientSound {
   constructor(sounds, maxDelay, updateDelay) {
     this.sounds = sounds;
@@ -230,6 +252,7 @@ class Player {
     this.dy = 0;
     this.rotation = 0;
     this.fireDelay = 0;
+    this.thrusting = false;
   }
 
   update() {
@@ -262,9 +285,13 @@ class Player {
     }
 
     if (state.keyState[keyMap.up]) {
+      this.thrusting = true;
+      startSoundLoop(sounds.thrust, 275);
       this.dx += accelerationVector.x;
       this.dy += accelerationVector.y;
     } else {
+      stopSoundLoop(sounds.thrust);
+      this.thrusting = false;
       if (this.dx <= -0.01) {
         this.dx += 0.01;
       } else if (this.dx >= 0.01) {
@@ -308,11 +335,11 @@ class Player {
   }
 
   render() {
-    renderWrap(applicationState.ctx, this.x, this.y, 20, this._render, { rotation: this.rotation });
+    renderWrap(applicationState.ctx, this.x, this.y, 20, this._render, { rotation: this.rotation, thrusting: this.thrusting });
   }
 
   _render(ctx, x, y, props) {
-    const { rotation } = props;
+    const { rotation, thrusting } = props;
 
     ctx.save()
     ctx.translate(screen.x + x * screen.scale, screen.y + y * screen.scale)
@@ -328,6 +355,13 @@ class Player {
     ctx.lineTo(0, 7)
     ctx.closePath()
     ctx.stroke()
+    if (thrusting) {
+      ctx.moveTo(0, 17)
+      ctx.lineTo(5, 20)
+      ctx.lineTo(-5, 20)
+      ctx.closePath()
+      ctx.stroke()
+    }
     ctx.restore()
   }
 }
