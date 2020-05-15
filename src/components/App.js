@@ -37,6 +37,9 @@ function App() {
   function previousScene() {
     gameIndex = (gameIndex + games.length - 1) % games.length;
     gameState = games[gameIndex](sharedState);
+    if (gameState.handlePause) {
+      gameState.handlePause(state.paused);
+    }
     setTitle(gameState.name);
     setOptions(gameState.options);
     state.totalFrameTime = 0;
@@ -46,6 +49,9 @@ function App() {
   function nextScene() {
     gameIndex = (gameIndex + 1) % games.length;
     gameState = games[gameIndex](sharedState);
+    if (gameState.handlePause) {
+      gameState.handlePause(state.paused);
+    }
     setTitle(gameState.name);
     setOptions(gameState.options);
     state.totalFrameTime = 0;
@@ -89,6 +95,9 @@ function App() {
     } else if (event.code === 'Escape') {
       event.preventDefault();
       state.paused = !state.paused;
+      if (gameState.handlePause) {
+        gameState.handlePause(state.paused);
+      }
       cancelMessage();
       forceUpdate();
     }
@@ -113,6 +122,9 @@ function App() {
     sharedState.height = rect.height * window.devicePixelRatio;
 
     gameState = games[gameIndex](sharedState);
+    if (gameState.handlePause) {
+      gameState.handlePause(state.paused);
+    }
     setTitle(gameState.name);
     setOptions(gameState.options);
 
