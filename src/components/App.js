@@ -35,6 +35,9 @@ function App() {
   const [options, setOptions] = React.useState();
 
   function previousScene() {
+    if (gameState.handleExit) {
+      gameState.handleExit();
+    }
     gameIndex = (gameIndex + games.length - 1) % games.length;
     gameState = games[gameIndex](sharedState);
     if (gameState.handlePause) {
@@ -47,6 +50,9 @@ function App() {
   }
 
   function nextScene() {
+    if (gameState.handleExit) {
+      gameState.handleExit();
+    }
     gameIndex = (gameIndex + 1) % games.length;
     gameState = games[gameIndex](sharedState);
     if (gameState.handlePause) {
