@@ -2,6 +2,7 @@ import thrust from '../sounds/thrust.wav'
 import fire from '../sounds/fire.wav'
 import beat1 from '../sounds/beat1.wav'
 import beat2 from '../sounds/beat2.wav'
+import { collide, boundingCircle, boundingRectangle } from '../lib/collision';
 
 let state;
 
@@ -57,7 +58,7 @@ export default function initialize(props) {
     keyState: {}
   }
   for (let i = 0; i < 4; i++) {
-    state.asteroids.push(new Asteroid(getRandomNumber(0, screen.width), getRandomNumber(0, screen.height), getRandomNumber(0, 360), 150));
+    state.asteroids.push(new Asteroid(getRandomNumber(0, screen.width), getRandomNumber(0, screen.height), getRandomNumber(0, 360), 80));
   }
   adjustScale(width, height);
   setTimeout(state.ambientSound.start, 100);
@@ -80,12 +81,25 @@ function resize() {
 function update() {
   state.isPaused = false;
   state.player.update();
-  state.bullets = state.bullets.filter(x => x.frameCount < 75);
+  state.bullets = state.bullets.filter(x => x.active);
+
   for (let i = 0; i < state.bullets.length; i++) {
     state.bullets[i].update();
   }
+
   for (let i = 0; i < state.asteroids.length; i++) {
     state.asteroids[i].update();
+  }
+
+  for (let i = 0; i < state.asteroids.length; i++) {
+    const bounds = state.asteroids[i].getCollisionBounds();
+    for (let k = 0; k < bounds.length; k++) {
+      for (let j = 0; j < state.bullets.length; j++) {
+        if (collide(bounds[k], state.bullets[j].getCollisionBounds())) {
+          state.bullets[j].active = false;
+        }
+      }
+    }
   }
 }
 
@@ -114,26 +128,41 @@ function render() {
   ctx.restore();
 }
 
-function renderWrap(ctx, x, y, size, render, props) {
-  const xos = [0];
-  if (x < size) {
-    xos.push(screen.width);
-  }
-  if (x > screen.width - size) {
-    xos.push(-screen.width);
-  }
-  const yos = [0];
-  if (y < size) {
-    yos.push(screen.height);
-  }
-  if (y > screen.height - size) {
-    yos.push(-screen.height);
-  }
-  for (let yo = 0; yo < yos.length; yo++) {
-    for (let xo = 0; xo < xos.length; xo++) {
-      render(ctx, x + xos[xo], y + yos[yo], props);
+function renderWrap(ctx, x, y, radius, render, props) {
+  const locations = getLocations(x, y, radius);
+
+  for (let j = 0; j < locations.y.length; j++) {
+    for (let i = 0; i < locations.x.length; i++) {
+      render(ctx, x + locations.x[i], y + locations.y[j], props);
     }
   }
+}
+
+function getLocations(x, y, radius) {
+  const xos = [0];
+
+  if (x < radius) {
+    xos.push(screen.width);
+  }
+
+  if (x > screen.width - radius) {
+    xos.push(-screen.width);
+  }
+
+  const yos = [0];
+
+  if (y < radius) {
+    yos.push(screen.height);
+  }
+
+  if (y > screen.height - radius) {
+    yos.push(-screen.height);
+  }
+
+  return {
+    x: xos,
+    y: yos
+  };
 }
 
 function handleKeyDown(event) {
@@ -335,7 +364,20 @@ class Player {
   }
 
   render() {
-    renderWrap(applicationState.ctx, this.x, this.y, 20, this._render, { rotation: this.rotation, thrusting: this.thrusting });
+    renderWrap(applicationState.ctx, this.x, this.y, 15, this._render, { rotation: this.rotation, thrusting: this.thrusting });
+  }
+
+  getCollisionBounds() {
+    const x = this.x - 10;
+    const y = this.y - 15;
+    const locations = getLocations(this.x, this.y, this.radius);
+    const bounds = [];
+    for (let j = 0; j < locations.y.length; j++) {
+      for (let i = 0; i < locations.x.length; i++) {
+        bounds.push(boundingRectangle(x, y, x + 20, y + 30));
+      }
+    }
+    return bounds;
   }
 
   _render(ctx, x, y, props) {
@@ -367,16 +409,16 @@ class Player {
 }
 
 class Asteroid {
-  constructor(x, y, dir, size) {
+  constructor(x, y, dir, radius) {
     this.x = x;
     this.y = y;
     this.dx = Math.cos((dir - 90) * (Math.PI / 180));
     this.dy = Math.sin((dir - 90) * (Math.PI / 180));
-    this.size = size;
+    this.radius = radius;
     this.points = [];
     for (let i = 0; i < 10; i++) {
-      const offset = getRandomNumber(0, size / 6) - size / 3;
-      this.points.push(angleToPoint(i * 36, (size / 2) + offset));
+      const offset = getRandomNumber(0, radius / 3) - radius / 6;
+      this.points.push(angleToPoint(i * 36, radius + offset));
     }
   }
 
@@ -402,7 +444,18 @@ class Asteroid {
   }
 
   render() {
-    renderWrap(applicationState.ctx, this.x, this.y, this.size, this._render, { points: this.points });
+    renderWrap(applicationState.ctx, this.x, this.y, this.radius, this._render, { points: this.points, radius: this.radius });
+  }
+
+  getCollisionBounds() {
+    const locations = getLocations(this.x, this.y, this.radius);
+    const bounds = [];
+    for (let j = 0; j < locations.y.length; j++) {
+      for (let i = 0; i < locations.x.length; i++) {
+        bounds.push(boundingCircle(this.x + locations.x[i], this.y + locations.y[j], this.radius));
+      }
+    }
+    return bounds;
   }
 
   _render(ctx, x, y, props) {
@@ -429,6 +482,7 @@ class Bullet {
     this.dx = dx;
     this.dy = dy;
     this.frameCount = 0;
+    this.active = true;
   }
 
   update() {
@@ -452,10 +506,18 @@ class Bullet {
     }
 
     this.frameCount++;
+
+    if (this.frameCount === 70) {
+      this.active = false;
+    }
   }
 
   render() {
     renderWrap(applicationState.ctx, this.x, this.y, 1, this._render);
+  }
+
+  getCollisionBounds() {
+    return boundingCircle(this.x, this.y, 1);
   }
 
   _render(ctx, x, y) {
