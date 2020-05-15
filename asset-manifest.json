@@ -1,17 +1,20 @@
 {
   "files": {
     "main.css": "/javascript-games/static/css/main.e2101564.chunk.css",
-    "main.js": "/javascript-games/static/js/main.869370b5.chunk.js",
-    "main.js.map": "/javascript-games/static/js/main.869370b5.chunk.js.map",
+    "main.js": "/javascript-games/static/js/main.3da55b26.chunk.js",
+    "main.js.map": "/javascript-games/static/js/main.3da55b26.chunk.js.map",
     "runtime-main.js": "/javascript-games/static/js/runtime-main.43c682df.js",
     "runtime-main.js.map": "/javascript-games/static/js/runtime-main.43c682df.js.map",
-    "static/js/2.ccd795a1.chunk.js": "/javascript-games/static/js/2.ccd795a1.chunk.js",
-    "static/js/2.ccd795a1.chunk.js.map": "/javascript-games/static/js/2.ccd795a1.chunk.js.map",
+    "static/js/2.710d96fd.chunk.js": "/javascript-games/static/js/2.710d96fd.chunk.js",
+    "static/js/2.710d96fd.chunk.js.map": "/javascript-games/static/js/2.710d96fd.chunk.js.map",
     "index.html": "/javascript-games/index.html",
-    "precache-manifest.3833b473099ccc188ada1246c674be38.js": "/javascript-games/precache-manifest.3833b473099ccc188ada1246c674be38.js",
+    "precache-manifest.3740cea5956b225c4b7073117467b65b.js": "/javascript-games/precache-manifest.3740cea5956b225c4b7073117467b65b.js",
     "service-worker.js": "/javascript-games/service-worker.js",
     "static/css/main.e2101564.chunk.css.map": "/javascript-games/static/css/main.e2101564.chunk.css.map",
-    "static/js/2.ccd795a1.chunk.js.LICENSE.txt": "/javascript-games/static/js/2.ccd795a1.chunk.js.LICENSE.txt",
+    "static/js/2.710d96fd.chunk.js.LICENSE.txt": "/javascript-games/static/js/2.710d96fd.chunk.js.LICENSE.txt",
+    "static/media/bangLarge.wav": "/javascript-games/static/media/bangLarge.23e343a2.wav",
+    "static/media/bangMedium.wav": "/javascript-games/static/media/bangMedium.0caca04f.wav",
+    "static/media/bangSmall.wav": "/javascript-games/static/media/bangSmall.1bf00be1.wav",
     "static/media/beat1.wav": "/javascript-games/static/media/beat1.a014226b.wav",
     "static/media/beat2.wav": "/javascript-games/static/media/beat2.a02b010d.wav",
     "static/media/fire.wav": "/javascript-games/static/media/fire.c4dc2846.wav",
@@ -19,8 +22,8 @@
   },
   "entrypoints": [
     "static/js/runtime-main.43c682df.js",
-    "static/js/2.ccd795a1.chunk.js",
+    "static/js/2.710d96fd.chunk.js",
     "static/css/main.e2101564.chunk.css",
-    "static/js/main.869370b5.chunk.js"
+    "static/js/main.3da55b26.chunk.js"
   ]
 }
