@@ -1,10 +1,11 @@
 import React from 'react';
 import Message from './Message';
 import Menu from './Menu';
+import asteroids from '../games/asteroids';
 import dodge from '../games/dodge';
 import noise from '../games/noise';
 
-const games = [dodge, noise];
+const games = [asteroids, dodge, noise];
 
 let gameIndex = 0;
 
