@@ -2,6 +2,9 @@ import thrust from '../sounds/thrust.wav'
 import fire from '../sounds/fire.wav'
 import beat1 from '../sounds/beat1.wav'
 import beat2 from '../sounds/beat2.wav'
+import bangLarge from '../sounds/bangLarge.wav'
+import bangMedium from '../sounds/bangMedium.wav'
+import bangSmall from '../sounds/bangSmall.wav'
 import { collide, boundingCircle, boundingRectangle } from '../lib/collision';
 
 let state;
@@ -17,11 +20,18 @@ const maxSpeed = 6;
 
 const fireRate = 150;
 
+const bigAsteroid = 80;
+const mediumAsteroid = 40;
+const smallAsteroid = 20;
+
 const sounds = {
   thrust: loadSound(thrust, 10),
   fire: loadSound(fire, 10),
   beat1: loadSound(beat1, 1),
-  beat2: loadSound(beat2, 1)
+  beat2: loadSound(beat2, 1),
+  bangLarge: loadSound(bangLarge, 10),
+  bangMedium: loadSound(bangMedium, 10),
+  bangSmall: loadSound(bangSmall, 10),
 };
 
 function adjustScale(width, height) {
@@ -47,19 +57,16 @@ export default function initialize(props) {
     bullets: [],
     asteroids: [],
     ambientSound: new AmbientSound([sounds.beat1, sounds.beat2], 800, (count, delay) => {
-      if (count > 9) {
-        if (delay > 200) {
-          return delay - 50;
-        }
+      if (delay > 200) {
+        return delay -= 10;
       }
       return delay;
     }),
+    level: 0,
     isPaused: true,
     keyState: {}
   }
-  for (let i = 0; i < 4; i++) {
-    state.asteroids.push(new Asteroid(getRandomNumber(0, screen.width), getRandomNumber(0, screen.height), getRandomNumber(0, 360), 80));
-  }
+  generateAsteroids();
   adjustScale(width, height);
   setTimeout(state.ambientSound.start, 100);
   return {
@@ -73,6 +80,12 @@ export default function initialize(props) {
   }
 }
 
+function generateAsteroids() {
+  for (let i = 0; i < 4 + state.level * 2; i++) {
+    state.asteroids.push(new Asteroid(getRandomNumber(0, screen.width), getRandomNumber(0, screen.height), getRandomNumber(0, 360), bigAsteroid));
+  }
+}
+
 function resize() {
   const { width, height } = applicationState;
   adjustScale(width, height);
@@ -81,25 +94,52 @@ function resize() {
 function update() {
   state.isPaused = false;
   state.player.update();
+
   state.bullets = state.bullets.filter(x => x.active);
 
   for (let i = 0; i < state.bullets.length; i++) {
     state.bullets[i].update();
   }
 
+  state.asteroids = state.asteroids.filter(x => x.active);
+
   for (let i = 0; i < state.asteroids.length; i++) {
     state.asteroids[i].update();
   }
 
   for (let i = 0; i < state.asteroids.length; i++) {
-    const bounds = state.asteroids[i].getCollisionBounds();
+    const asteroid = state.asteroids[i];
+    let hit = false;
+    const bounds = asteroid.getCollisionBounds();
     for (let k = 0; k < bounds.length; k++) {
       for (let j = 0; j < state.bullets.length; j++) {
         if (collide(bounds[k], state.bullets[j].getCollisionBounds())) {
           state.bullets[j].active = false;
+          hit = true;
         }
       }
     }
+    if (hit) {
+      asteroid.active = false;
+      if (asteroid.radius === bigAsteroid) {
+        playSound(sounds.bangLarge);
+        state.asteroids.push(new Asteroid(asteroid.x - 15, asteroid.y - 15, getRandomNumber(0, 360), mediumAsteroid));
+        state.asteroids.push(new Asteroid(asteroid.x + 15, asteroid.y + 15, getRandomNumber(0, 360), mediumAsteroid));
+      } else if (asteroid.radius === mediumAsteroid) {
+        playSound(sounds.bangMedium);
+        state.asteroids.push(new Asteroid(asteroid.x - 5, asteroid.y - 5, getRandomNumber(0, 360), smallAsteroid));
+        state.asteroids.push(new Asteroid(asteroid.x + 5, asteroid.y + 5, getRandomNumber(0, 360), smallAsteroid));
+      } else {
+        playSound(sounds.bangSmall);
+      }
+    }
+  }
+
+  if (state.asteroids.length === 0) {
+    state.ambientSound.stop();
+    state.level++;
+    generateAsteroids();
+    setTimeout(state.ambientSound.start, 1100);
   }
 }
 
@@ -237,9 +277,6 @@ class AmbientSound {
   }
 
   start() {
-    if (!this.isPlaying) {
-      this.stop();
-    }
     this.isPlaying = true;
     this.isPaused = state.isPaused;
     this.count = 0;
@@ -249,10 +286,8 @@ class AmbientSound {
   }
 
   stop() {
-    if (this.isPlaying) {
-      clearTimeout(this.timeout);
-    }
     this.isPlaying = false;
+    clearTimeout(this.timeout);
   }
 
   playNextSound() {
@@ -420,6 +455,7 @@ class Asteroid {
       const offset = getRandomNumber(0, radius / 3) - radius / 6;
       this.points.push(angleToPoint(i * 36, radius + offset));
     }
+    this.active = true;
   }
 
   update() {
