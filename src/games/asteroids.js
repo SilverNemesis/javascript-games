@@ -76,8 +76,13 @@ export default function initialize(props) {
     render,
     handleKeyDown,
     handleKeyUp,
-    handlePause
+    handlePause,
+    handleExit
   }
+}
+
+function handleExit() {
+  state.ambientSound.stop();
 }
 
 function generateAsteroids() {
@@ -304,6 +309,7 @@ class AmbientSound {
       this.index = (this.index + 1) % this.sounds.length;
       playSound(this.sounds[index])
     }
+    clearTimeout(this.timeout);
     this.timeout = setTimeout(this.playNextSound, delay);
   }
 }
