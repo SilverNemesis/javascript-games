@@ -33,7 +33,6 @@ const keyMap = {
   left: 'KeyA',
   right: 'KeyD',
   up: 'KeyW',
-  down: 'KeyS',
   fire: 'Space'
 };
 
@@ -265,9 +264,6 @@ class Player {
     if (state.keyState[keyMap.up]) {
       this.dx += accelerationVector.x;
       this.dy += accelerationVector.y;
-    } else if (state.keyState[keyMap.down]) {
-      this.dx -= accelerationVector.x;
-      this.dy -= accelerationVector.y;
     } else {
       if (this.dx <= -0.01) {
         this.dx += 0.01;
