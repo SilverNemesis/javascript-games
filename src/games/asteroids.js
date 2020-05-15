@@ -33,7 +33,11 @@ export default function initialize(props) {
   state = {
     player: new Player(),
     bullets: [],
+    asteroids: [],
     keyState: {}
+  }
+  for (let i = 0; i < 4; i++) {
+    state.asteroids.push(new Asteroid(getRandomNumber(0, screen.width), getRandomNumber(0, screen.height), getRandomNumber(0, 360), 150));
   }
   adjustScale(width, height);
   return {
@@ -57,6 +61,9 @@ function update() {
   for (let i = 0; i < state.bullets.length; i++) {
     state.bullets[i].update();
   }
+  for (let i = 0; i < state.asteroids.length; i++) {
+    state.asteroids[i].update();
+  }
 }
 
 function render() {
@@ -75,6 +82,10 @@ function render() {
 
   for (let i = 0; i < state.bullets.length; i++) {
     state.bullets[i].render();
+  }
+
+  for (let i = 0; i < state.asteroids.length; i++) {
+    state.asteroids[i].render();
   }
 
   ctx.restore();
@@ -108,6 +119,17 @@ function handleKeyDown(event) {
 
 function handleKeyUp(event) {
   state.keyState[event.code] = false;
+}
+
+function getRandomNumber(min, max) {
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+function angleToPoint(angle, radius) {
+  return {
+    x: Math.cos((angle - 90) * (Math.PI / 180)) * radius,
+    y: Math.sin((angle - 90) * (Math.PI / 180)) * radius
+  }
 }
 
 class Player {
@@ -216,6 +238,62 @@ class Player {
     ctx.lineTo(0, -15)
     ctx.lineTo(-10, 15)
     ctx.lineTo(0, 7)
+    ctx.closePath()
+    ctx.stroke()
+    ctx.restore()
+  }
+}
+
+class Asteroid {
+  constructor(x, y, dir, size) {
+    this.x = x;
+    this.y = y;
+    this.dx = Math.cos((dir - 90) * (Math.PI / 180));
+    this.dy = Math.sin((dir - 90) * (Math.PI / 180));
+    this.size = size;
+    this.points = [];
+    for (let i = 0; i < 10; i++) {
+      const offset = getRandomNumber(0, size / 6) - size / 3;
+      this.points.push(angleToPoint(i * 36, (size / 2) + offset));
+    }
+  }
+
+  update() {
+    const delta = applicationState.deltaTime / 16;
+
+    const { width, height } = screen;
+
+    this.x += delta * this.dx
+    this.y += delta * this.dy
+
+    if (this.x > width) {
+      this.x -= width
+    } else if (this.x < 0) {
+      this.x += width
+    }
+
+    if (this.y > height) {
+      this.y -= height
+    } else if (this.y < 0) {
+      this.y += height
+    }
+  }
+
+  render() {
+    renderWrap(applicationState.ctx, this.x, this.y, this.size, this._render, { points: this.points });
+  }
+
+  _render(ctx, x, y, props) {
+    ctx.save()
+    ctx.translate(screen.x + x * screen.scale, screen.y + y * screen.scale)
+    ctx.scale(screen.scale, screen.scale);
+    ctx.strokeStyle = 'white'
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.moveTo(props.points[0].x, props.points[0].y)
+    for (let i = 1; i < props.points.length; i++) {
+      ctx.lineTo(props.points[i].x, props.points[i].y)
+    }
     ctx.closePath()
     ctx.stroke()
     ctx.restore()
