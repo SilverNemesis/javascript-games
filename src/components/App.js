@@ -14,7 +14,7 @@ let gameState = {};
 const state = {
   totalFrameTime: 0,
   frameCount: 0,
-  paused: true,
+  paused: false,
   showFrameTime: false
 };
 
@@ -41,9 +41,6 @@ function App() {
     }
     gameIndex = (gameIndex + games.length - 1) % games.length;
     gameState = games[gameIndex](sharedState);
-    if (gameState.handlePause) {
-      gameState.handlePause(state.paused);
-    }
     setTitle(gameState.name);
     setOptions(gameState.options);
     state.totalFrameTime = 0;
@@ -56,9 +53,6 @@ function App() {
     }
     gameIndex = (gameIndex + 1) % games.length;
     gameState = games[gameIndex](sharedState);
-    if (gameState.handlePause) {
-      gameState.handlePause(state.paused);
-    }
     setTitle(gameState.name);
     setOptions(gameState.options);
     state.totalFrameTime = 0;
@@ -131,9 +125,6 @@ function App() {
     sharedState.height = rect.height * window.devicePixelRatio;
 
     gameState = games[gameIndex](sharedState);
-    if (gameState.handlePause) {
-      gameState.handlePause(state.paused);
-    }
     setTitle(gameState.name);
     setOptions(gameState.options);
 
