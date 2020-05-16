@@ -88,6 +88,7 @@ function App() {
 
   sharedState.showMessage = showMessage;
   sharedState.setOptions = setOptions;
+  sharedState.unpause = () => { state.paused = false };
 
   const forceUpdate = React.useCallback(() => { setUpdate(x => x + 1); }, []);
 
