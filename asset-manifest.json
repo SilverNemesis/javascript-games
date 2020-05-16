@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/javascript-games/static/css/main.e2101564.chunk.css",
-    "main.js": "/javascript-games/static/js/main.0baaf211.chunk.js",
-    "main.js.map": "/javascript-games/static/js/main.0baaf211.chunk.js.map",
+    "main.js": "/javascript-games/static/js/main.d6a4d99a.chunk.js",
+    "main.js.map": "/javascript-games/static/js/main.d6a4d99a.chunk.js.map",
     "runtime-main.js": "/javascript-games/static/js/runtime-main.43c682df.js",
     "runtime-main.js.map": "/javascript-games/static/js/runtime-main.43c682df.js.map",
     "static/js/2.710d96fd.chunk.js": "/javascript-games/static/js/2.710d96fd.chunk.js",
     "static/js/2.710d96fd.chunk.js.map": "/javascript-games/static/js/2.710d96fd.chunk.js.map",
     "index.html": "/javascript-games/index.html",
-    "precache-manifest.ea308930c1f61d3d8047e3866e3db115.js": "/javascript-games/precache-manifest.ea308930c1f61d3d8047e3866e3db115.js",
+    "precache-manifest.f5b5b6fdf63249ec5413366857b70f15.js": "/javascript-games/precache-manifest.f5b5b6fdf63249ec5413366857b70f15.js",
     "service-worker.js": "/javascript-games/service-worker.js",
     "static/css/main.e2101564.chunk.css.map": "/javascript-games/static/css/main.e2101564.chunk.css.map",
     "static/js/2.710d96fd.chunk.js.LICENSE.txt": "/javascript-games/static/js/2.710d96fd.chunk.js.LICENSE.txt",
@@ -24,6 +24,6 @@
     "static/js/runtime-main.43c682df.js",
     "static/js/2.710d96fd.chunk.js",
     "static/css/main.e2101564.chunk.css",
-    "static/js/main.0baaf211.chunk.js"
+    "static/js/main.d6a4d99a.chunk.js"
   ]
 }
