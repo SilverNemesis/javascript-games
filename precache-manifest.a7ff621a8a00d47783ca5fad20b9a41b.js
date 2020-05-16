@@ -1,11 +1,11 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "e29154d91bf2f9230cd4b8945fddbce4",
+    "revision": "e207fc4b019309094936ba2b2c3c4de1",
     "url": "/javascript-games/index.html"
   },
   {
-    "revision": "4772b00e87dfa960abec",
-    "url": "/javascript-games/static/css/main.e2101564.chunk.css"
+    "revision": "bdfc9fe810d8ec07e07a",
+    "url": "/javascript-games/static/css/main.e3c3214c.chunk.css"
   },
   {
     "revision": "1e7a9bd92a38858a6542",
@@ -16,12 +16,16 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/javascript-games/static/js/2.710d96fd.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "4772b00e87dfa960abec",
-    "url": "/javascript-games/static/js/main.52187dc1.chunk.js"
+    "revision": "bdfc9fe810d8ec07e07a",
+    "url": "/javascript-games/static/js/main.2c3f3220.chunk.js"
   },
   {
     "revision": "9193be7cc0070a5e8491",
     "url": "/javascript-games/static/js/runtime-main.43c682df.js"
+  },
+  {
+    "revision": "0f92ef6ad1a55c7fa05606ecf08f2a4e",
+    "url": "/javascript-games/static/media/Hyperspace.0f92ef6a.otf"
   },
   {
     "revision": "23e343a239da9dd38ca22e6bea07fc3d",
