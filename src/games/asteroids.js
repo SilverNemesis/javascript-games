@@ -54,19 +54,15 @@ export default function initialize(props) {
   const { width, height } = applicationState;
   state = {
     player: new Player(),
-    bullets: [],
-    asteroids: [],
     ambientSound: new AmbientSound([sounds.beat1, sounds.beat2], 800, (count, delay) => {
       if (delay > 200) {
         return delay -= 10;
       }
       return delay;
     }),
-    level: 0,
-    gameOver: false,
-    isPaused: true,
     keyState: {}
   }
+  reset();
   generateAsteroids();
   adjustScale(width, height);
   setTimeout(state.ambientSound.start, 100);
@@ -84,14 +80,15 @@ export default function initialize(props) {
 
 function reset() {
   state.player.reset();
+  state.score = 0;
   state.bullets = [];
   state.asteroids = [];
   state.level = 0;
   state.gameOver = false;
-  state.isPaused = false;
+  state.isPaused = true;
   state.keyState = {};
   applicationState.setOptions();
-  applicationState.unpause();
+  applicationState.pause();
   generateAsteroids();
   setTimeout(state.ambientSound.start, 100);
 }
@@ -161,14 +158,17 @@ function update() {
     if (asteroidHit) {
       asteroid.active = false;
       if (asteroid.radius === bigAsteroid) {
+        state.score += 20;
         playSound(sounds.bangLarge);
         state.asteroids.push(new Asteroid(asteroid.x - 15, asteroid.y - 15, getRandomNumber(0, 360), mediumAsteroid, getRandomNumber(1, 2)));
         state.asteroids.push(new Asteroid(asteroid.x + 15, asteroid.y + 15, getRandomNumber(0, 360), mediumAsteroid, getRandomNumber(1, 2)));
       } else if (asteroid.radius === mediumAsteroid) {
+        state.score += 50;
         playSound(sounds.bangMedium);
         state.asteroids.push(new Asteroid(asteroid.x - 5, asteroid.y - 5, getRandomNumber(0, 360), smallAsteroid, getRandomNumber(1, 2)));
         state.asteroids.push(new Asteroid(asteroid.x + 5, asteroid.y + 5, getRandomNumber(0, 360), smallAsteroid, getRandomNumber(1, 2)));
       } else {
+        state.score += 100;
         playSound(sounds.bangSmall);
       }
     }
@@ -220,14 +220,34 @@ function render() {
     state.asteroids[i].render();
   }
 
+  {
+    ctx.font = '100 ' + (screen.scale * 42).toFixed(0) + 'px Hyperspace';
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'end';
+    ctx.textBaseline = 'bottom';
+    const x = screen.x + screen.width * screen.scale / 5;
+    const y = screen.y + screen.width * screen.scale / 12;
+    ctx.fillText(state.score.toFixed(0).padStart(7), x, y);
+  }
+
+  {
+    ctx.font = '100 ' + (screen.scale * 24).toFixed(0) + 'px Hyperspace';
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    const x = screen.x + screen.width * screen.scale / 2;
+    const y = screen.y + screen.width * screen.scale / 12;
+    ctx.fillText(state.level.toFixed(0).padStart(2, '0'), x, y);
+  }
+
   if (state.gameOver) {
-    ctx.font = '100 ' + (screen.scale * 100).toFixed(0) + 'px monospace';
-    ctx.strokeStyle = 'white';
+    ctx.font = '100 ' + (screen.scale * 100).toFixed(0) + 'px Hyperspace';
+    ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     const x = screen.x + screen.width * screen.scale / 2;
     const y = screen.y + screen.height * screen.scale / 2;
-    ctx.strokeText('GAME OVER', x, y);
+    ctx.fillText('GAME OVER', x, y);
   }
 
   ctx.restore();
