@@ -14,7 +14,8 @@ let gameState = {};
 const state = {
   totalFrameTime: 0,
   frameCount: 0,
-  paused: true
+  paused: true,
+  showFrameTime: false
 };
 
 const sharedState = {
@@ -88,6 +89,7 @@ function App() {
 
   sharedState.showMessage = showMessage;
   sharedState.setOptions = setOptions;
+  sharedState.pause = () => { state.paused = true };
   sharedState.unpause = () => { state.paused = false };
 
   const forceUpdate = React.useCallback(() => { setUpdate(x => x + 1); }, []);
@@ -169,7 +171,9 @@ function App() {
         state.totalFrameTime += t1 - t0;
         state.frameCount++;
 
-        drawFrameTime();
+        if (state.showFrameTime) {
+          drawFrameTime();
+        }
       }
 
       previousTimeRef.current = currentTime;
