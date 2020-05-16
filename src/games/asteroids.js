@@ -102,7 +102,7 @@ function handleExit() {
 
 function generateAsteroids() {
   for (let i = 0; i < 4 + state.level * 2; i++) {
-    state.asteroids.push(new Asteroid(getRandomNumber(0, screen.width), getRandomNumber(0, screen.height), getRandomNumber(0, 360), bigAsteroid));
+    state.asteroids.push(new Asteroid(getRandomNumber(0, screen.width), getRandomNumber(0, screen.height), getRandomNumber(0, 360), bigAsteroid, getRandomNumber(1, 2)));
   }
 }
 
@@ -162,12 +162,12 @@ function update() {
       asteroid.active = false;
       if (asteroid.radius === bigAsteroid) {
         playSound(sounds.bangLarge);
-        state.asteroids.push(new Asteroid(asteroid.x - 15, asteroid.y - 15, getRandomNumber(0, 360), mediumAsteroid));
-        state.asteroids.push(new Asteroid(asteroid.x + 15, asteroid.y + 15, getRandomNumber(0, 360), mediumAsteroid));
+        state.asteroids.push(new Asteroid(asteroid.x - 15, asteroid.y - 15, getRandomNumber(0, 360), mediumAsteroid, getRandomNumber(1, 2)));
+        state.asteroids.push(new Asteroid(asteroid.x + 15, asteroid.y + 15, getRandomNumber(0, 360), mediumAsteroid, getRandomNumber(1, 2)));
       } else if (asteroid.radius === mediumAsteroid) {
         playSound(sounds.bangMedium);
-        state.asteroids.push(new Asteroid(asteroid.x - 5, asteroid.y - 5, getRandomNumber(0, 360), smallAsteroid));
-        state.asteroids.push(new Asteroid(asteroid.x + 5, asteroid.y + 5, getRandomNumber(0, 360), smallAsteroid));
+        state.asteroids.push(new Asteroid(asteroid.x - 5, asteroid.y - 5, getRandomNumber(0, 360), smallAsteroid, getRandomNumber(1, 2)));
+        state.asteroids.push(new Asteroid(asteroid.x + 5, asteroid.y + 5, getRandomNumber(0, 360), smallAsteroid, getRandomNumber(1, 2)));
       } else {
         playSound(sounds.bangSmall);
       }
@@ -514,12 +514,13 @@ class Player {
 }
 
 class Asteroid {
-  constructor(x, y, dir, radius) {
+  constructor(x, y, dir, radius, speed) {
     this.x = x;
     this.y = y;
     this.dx = Math.cos((dir - 90) * (Math.PI / 180));
     this.dy = Math.sin((dir - 90) * (Math.PI / 180));
     this.radius = radius;
+    this.speed = speed;
     this.points = [];
     for (let i = 0; i < 10; i++) {
       const offset = getRandomNumber(0, radius / 3) - radius / 6;
@@ -533,8 +534,8 @@ class Asteroid {
 
     const { width, height } = screen;
 
-    this.x += delta * this.dx
-    this.y += delta * this.dy
+    this.x += delta * this.speed * this.dx
+    this.y += delta * this.speed * this.dy
 
     if (this.x > width) {
       this.x -= width
