@@ -63,6 +63,7 @@ export default function initialize(props) {
       return delay;
     }),
     level: 0,
+    gameOver: false,
     isPaused: true,
     keyState: {}
   }
@@ -79,6 +80,20 @@ export default function initialize(props) {
     handlePause,
     handleExit
   }
+}
+
+function reset() {
+  state.player.reset();
+  state.bullets = [];
+  state.asteroids = [];
+  state.level = 0;
+  state.gameOver = false;
+  state.isPaused = false;
+  state.keyState = {};
+  applicationState.setOptions();
+  applicationState.unpause();
+  generateAsteroids();
+  setTimeout(state.ambientSound.start, 100);
 }
 
 function handleExit() {
@@ -98,7 +113,10 @@ function resize() {
 
 function update() {
   state.isPaused = false;
-  state.player.update();
+
+  if (!state.gameOver) {
+    state.player.update();
+  }
 
   state.bullets = state.bullets.filter(x => x.active);
 
@@ -112,19 +130,35 @@ function update() {
     state.asteroids[i].update();
   }
 
+  const playerBounds = state.player.getCollisionBounds();
+
+  let playerHit = false;
+
   for (let i = 0; i < state.asteroids.length; i++) {
     const asteroid = state.asteroids[i];
-    let hit = false;
+    let asteroidHit = false;
     const bounds = asteroid.getCollisionBounds();
     for (let k = 0; k < bounds.length; k++) {
       for (let j = 0; j < state.bullets.length; j++) {
         if (collide(bounds[k], state.bullets[j].getCollisionBounds())) {
           state.bullets[j].active = false;
-          hit = true;
+          asteroidHit = true;
         }
       }
     }
-    if (hit) {
+
+    if (!asteroidHit && !state.gameOver) {
+      for (let k = 0; k < bounds.length; k++) {
+        for (let j = 0; j < playerBounds.length; j++) {
+          if (collide(bounds[k], playerBounds[j])) {
+            playerHit = true;
+            asteroidHit = true;
+          }
+        }
+      }
+    }
+
+    if (asteroidHit) {
       asteroid.active = false;
       if (asteroid.radius === bigAsteroid) {
         playSound(sounds.bangLarge);
@@ -138,6 +172,20 @@ function update() {
         playSound(sounds.bangSmall);
       }
     }
+  }
+
+  if (playerHit) {
+    stopSoundLoop(sounds.thrust);
+    state.ambientSound.stop();
+    state.gameOver = true;
+    applicationState.showMessage([]);
+    applicationState.setOptions([
+      {
+        type: 'function',
+        name: 'RESTART',
+        function: reset
+      }
+    ]);
   }
 
   if (state.asteroids.length === 0) {
@@ -160,7 +208,9 @@ function render() {
   ctx.rect(screen.x, screen.y, screen.width * screen.scale, screen.height * screen.scale);
   ctx.clip();
 
-  state.player.render();
+  if (!state.gameOver) {
+    state.player.render();
+  }
 
   for (let i = 0; i < state.bullets.length; i++) {
     state.bullets[i].render();
@@ -168,6 +218,16 @@ function render() {
 
   for (let i = 0; i < state.asteroids.length; i++) {
     state.asteroids[i].render();
+  }
+
+  if (state.gameOver) {
+    ctx.font = '100 ' + (screen.scale * 100).toFixed(0) + 'px monospace';
+    ctx.strokeStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const x = screen.x + screen.width * screen.scale / 2;
+    const y = screen.y + screen.height * screen.scale / 2;
+    ctx.strokeText('GAME OVER', x, y);
   }
 
   ctx.restore();
@@ -316,6 +376,10 @@ class AmbientSound {
 
 class Player {
   constructor() {
+    this.reset();
+  }
+
+  reset() {
     this.x = screen.width / 2;
     this.y = screen.height / 2;
     this.dx = 0;
