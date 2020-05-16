@@ -9,6 +9,11 @@ import { collide, boundingCircle, boundingRectangle } from '../lib/collision';
 
 let state;
 
+const GAME_STATE_WAITING = 0;
+const GAME_STATE_PLAYING = 1;
+const GAME_STATE_PAUSED = 2;
+const GAME_STATE_GAMEOVER = 3;
+
 let applicationState = {};
 
 const screen = {
@@ -45,7 +50,7 @@ function adjustScale(width, height) {
 const keyMap = {
   left: 'KeyA',
   right: 'KeyD',
-  up: 'KeyW',
+  thrust: 'KeyW',
   fire: 'Space'
 };
 
@@ -63,7 +68,6 @@ export default function initialize(props) {
     keyState: {}
   }
   reset();
-  generateAsteroids();
   adjustScale(width, height);
   setTimeout(state.ambientSound.start, 100);
   return {
@@ -84,11 +88,9 @@ function reset() {
   state.bullets = [];
   state.asteroids = [];
   state.level = 0;
-  state.gameOver = false;
-  state.isPaused = true;
+  state.gameState = GAME_STATE_WAITING;
+  state.waitTime = 0;
   state.keyState = {};
-  applicationState.setOptions();
-  applicationState.pause();
   generateAsteroids();
   setTimeout(state.ambientSound.start, 100);
 }
@@ -109,10 +111,21 @@ function resize() {
 }
 
 function update() {
-  state.isPaused = false;
+  if (state.gameState === GAME_STATE_PAUSED) {
+    state.gameState = GAME_STATE_PLAYING;
+  }
 
-  if (!state.gameOver) {
+  if (state.gameState === GAME_STATE_PLAYING) {
     state.player.update();
+  } else if (state.gameState === GAME_STATE_WAITING) {
+    if (state.keyState[keyMap.left] || state.keyState[keyMap.right] || state.keyState[keyMap.thrust] || state.keyState[keyMap.fire]) {
+      state.gameState = GAME_STATE_PLAYING;
+    }
+  } else if (state.gameState === GAME_STATE_GAMEOVER) {
+    state.waitTime -= applicationState.deltaTime;
+    if (state.waitTime < 0) {
+      reset();
+    }
   }
 
   state.bullets = state.bullets.filter(x => x.active);
@@ -144,7 +157,7 @@ function update() {
       }
     }
 
-    if (!asteroidHit && !state.gameOver) {
+    if (!asteroidHit && state.gameState === GAME_STATE_PLAYING) {
       for (let k = 0; k < bounds.length; k++) {
         for (let j = 0; j < playerBounds.length; j++) {
           if (collide(bounds[k], playerBounds[j])) {
@@ -177,15 +190,8 @@ function update() {
   if (playerHit) {
     stopSoundLoop(sounds.thrust);
     state.ambientSound.stop();
-    state.gameOver = true;
-    applicationState.showMessage([]);
-    applicationState.setOptions([
-      {
-        type: 'function',
-        name: 'RESTART',
-        function: reset
-      }
-    ]);
+    state.gameState = GAME_STATE_GAMEOVER;
+    state.waitTime = 10000;
   }
 
   if (state.asteroids.length === 0) {
@@ -208,7 +214,7 @@ function render() {
   ctx.rect(screen.x, screen.y, screen.width * screen.scale, screen.height * screen.scale);
   ctx.clip();
 
-  if (!state.gameOver) {
+  if (state.gameState === GAME_STATE_PLAYING || state.gameState === GAME_STATE_PAUSED) {
     state.player.render();
   }
 
@@ -240,7 +246,15 @@ function render() {
     ctx.fillText(state.level.toFixed(0).padStart(2, '0'), x, y);
   }
 
-  if (state.gameOver) {
+  if (state.gameState === GAME_STATE_WAITING) {
+    ctx.font = '100 ' + (screen.scale * 30).toFixed(0) + 'px Hyperspace';
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const x = screen.x + screen.width * screen.scale / 2;
+    const y = screen.y + screen.height * screen.scale / 2;
+    ctx.fillText('PRESS ANY CONTROL TO BEGIN', x, y);
+  } else if (state.gameState === GAME_STATE_GAMEOVER) {
     ctx.font = '100 ' + (screen.scale * 100).toFixed(0) + 'px Hyperspace';
     ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
@@ -299,7 +313,15 @@ function handleKeyUp(event) {
 }
 
 function handlePause(isPaused) {
-  state.ambientSound.isPaused = isPaused;
+  if (state.gameState === GAME_STATE_PLAYING) {
+    if (isPaused) {
+      state.gameState = GAME_STATE_PAUSED;
+    }
+  } else if (state.gameState === GAME_STATE_PAUSED) {
+    if (!isPaused) {
+      state.gameState = GAME_STATE_PLAYING;
+    }
+  }
 }
 
 function getRandomNumber(min, max) {
@@ -355,7 +377,6 @@ class AmbientSound {
     this.maxDelay = maxDelay;
     this.updateDelay = updateDelay;
     this.isPlaying = false;
-    this.isPaused = false;
     this.start = this.start.bind(this);
     this.stop = this.stop.bind(this);
     this.playNextSound = this.playNextSound.bind(this);
@@ -363,7 +384,6 @@ class AmbientSound {
 
   start() {
     this.isPlaying = true;
-    this.isPaused = state.isPaused;
     this.count = 0;
     this.index = 0;
     this.delay = this.maxDelay;
@@ -380,7 +400,7 @@ class AmbientSound {
       return;
     }
     const { delay, index } = this;
-    if (!this.isPaused) {
+    if (state.gameState === GAME_STATE_PLAYING) {
       this.count++;
       this.delay = this.updateDelay(this.count, this.delay);
       if (this.delay !== delay) {
@@ -438,7 +458,7 @@ class Player {
       y: delta * 0.2 * dy
     }
 
-    if (state.keyState[keyMap.up]) {
+    if (state.keyState[keyMap.thrust]) {
       this.thrusting = true;
       startSoundLoop(sounds.thrust, 275);
       this.dx += accelerationVector.x;
