@@ -1,10 +1,10 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "b409fb3837308a982a2e47ee91025ebb",
+    "revision": "5f3374d62cf4d88a764013b2d07be656",
     "url": "/javascript-games/index.html"
   },
   {
-    "revision": "64f500036193cba8ea76",
+    "revision": "ca9bf993b06feaa836e4",
     "url": "/javascript-games/static/css/main.e3c3214c.chunk.css"
   },
   {
@@ -16,8 +16,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/javascript-games/static/js/2.710d96fd.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "64f500036193cba8ea76",
-    "url": "/javascript-games/static/js/main.71c84533.chunk.js"
+    "revision": "ca9bf993b06feaa836e4",
+    "url": "/javascript-games/static/js/main.7d93966c.chunk.js"
   },
   {
     "revision": "9193be7cc0070a5e8491",
