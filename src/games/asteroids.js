@@ -23,7 +23,8 @@ const screen = {
 
 const maxSpeed = 6;
 
-const fireRate = 150;
+const fireRate = 200;
+const maxBullets = 4;
 
 const bigAsteroid = 80;
 const mediumAsteroid = 40;
@@ -129,6 +130,10 @@ function update() {
   }
 
   state.bullets = state.bullets.filter(x => x.active);
+
+  if (state.bullets.length > maxBullets) {
+    state.bullets.splice(0, state.bullets.length - maxBullets);
+  }
 
   for (let i = 0; i < state.bullets.length; i++) {
     state.bullets[i].update();
@@ -628,7 +633,7 @@ class Bullet {
     this.y = y;
     this.dx = dx;
     this.dy = dy;
-    this.frameCount = 0;
+    this.time = 0;
     this.active = true;
   }
 
@@ -652,9 +657,9 @@ class Bullet {
       this.y += height
     }
 
-    this.frameCount++;
+    this.time += applicationState.deltaTime;
 
-    if (this.frameCount === 70) {
+    if (this.time >= 4000) {
       this.active = false;
     }
   }
