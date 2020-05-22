@@ -21,7 +21,7 @@ const screen = {
   height: 1080
 };
 
-const maxSpeed = 6;
+const maxSpeed = 5;
 
 const fireRate = 200;
 const maxBullets = 4;
@@ -412,7 +412,7 @@ class AmbientSound {
         this.count = 0;
       }
       this.index = (this.index + 1) % this.sounds.length;
-      playSound(this.sounds[index])
+      playSound(this.sounds[index]);
     }
     clearTimeout(this.timeout);
     this.timeout = setTimeout(this.playNextSound, delay);
@@ -444,9 +444,9 @@ class Player {
     const delta = applicationState.deltaTime / 16;
 
     if (state.keyState[keyMap.left]) {
-      this.rotation -= delta * 5;
+      this.rotation -= delta * 4;
     } else if (state.keyState[keyMap.right]) {
-      this.rotation += delta * 5;
+      this.rotation += delta * 4;
     }
 
     const dx = Math.cos((this.rotation - 90) * (Math.PI / 180));
@@ -454,7 +454,7 @@ class Player {
 
     if (state.keyState[keyMap.fire] && this.fireDelay === 0) {
       playSound(sounds.fire);
-      state.bullets.push(new Bullet(this.x + dx * 7.0, this.y + dy * 7.0, dx * 12.0, dy * 12.0));
+      state.bullets.push(new Bullet(this.x + dx * 7.0, this.y + dy * 7.0, dx * 6.0, dy * 6.0));
       this.fireDelay = fireRate;
     }
 
@@ -533,28 +533,29 @@ class Player {
   _render(ctx, x, y, props) {
     const { rotation, thrusting } = props;
 
-    ctx.save()
-    ctx.translate(screen.x + x * screen.scale, screen.y + y * screen.scale)
-    ctx.rotate((Math.PI / 180) * rotation)
+    ctx.save();
+    ctx.translate(screen.x + x * screen.scale, screen.y + y * screen.scale);
+    ctx.rotate((Math.PI / 180) * rotation);
     ctx.scale(screen.scale, screen.scale);
-    ctx.strokeStyle = 'white'
-    ctx.lineWidth = 1
-    ctx.beginPath()
-    ctx.moveTo(0, 7)
-    ctx.lineTo(10, 15)
-    ctx.lineTo(0, -15)
-    ctx.lineTo(-10, 15)
-    ctx.lineTo(0, 7)
-    ctx.closePath()
-    ctx.stroke()
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, 7);
+    ctx.lineTo(10, 15);
+    ctx.lineTo(0, -15);
+    ctx.lineTo(-10, 15);
+    ctx.lineTo(0, 7);
+    ctx.closePath();
+    ctx.stroke();
     if (thrusting) {
-      ctx.moveTo(0, 17)
-      ctx.lineTo(5, 20)
-      ctx.lineTo(-5, 20)
-      ctx.closePath()
-      ctx.stroke()
+      ctx.lineWidth = 1;
+      ctx.moveTo(0, 17);
+      ctx.lineTo(5, 20);
+      ctx.lineTo(-5, 20);
+      ctx.closePath();
+      ctx.stroke();
     }
-    ctx.restore()
+    ctx.restore();
   }
 }
 
@@ -579,24 +580,24 @@ class Asteroid {
 
     const { width, height } = screen;
 
-    this.x += delta * this.speed * this.dx
-    this.y += delta * this.speed * this.dy
+    this.x += delta * this.speed * this.dx;
+    this.y += delta * this.speed * this.dy;
 
     if (this.x > width) {
-      this.x -= width
+      this.x -= width;
     } else if (this.x < 0) {
-      this.x += width
+      this.x += width;
     }
 
     if (this.y > height) {
-      this.y -= height
+      this.y -= height;
     } else if (this.y < 0) {
-      this.y += height
+      this.y += height;
     }
   }
 
   render() {
-    renderWrap(applicationState.ctx, this.x, this.y, this.radius, this._render, { points: this.points, radius: this.radius });
+    renderWrap(applicationState.ctx, this.x, this.y, this.radius, this._render, { points: this.points });
   }
 
   getCollisionBounds() {
@@ -611,19 +612,19 @@ class Asteroid {
   }
 
   _render(ctx, x, y, props) {
-    ctx.save()
-    ctx.translate(screen.x + x * screen.scale, screen.y + y * screen.scale)
+    ctx.save();
+    ctx.translate(screen.x + x * screen.scale, screen.y + y * screen.scale);
     ctx.scale(screen.scale, screen.scale);
-    ctx.strokeStyle = 'white'
-    ctx.lineWidth = 1
-    ctx.beginPath()
-    ctx.moveTo(props.points[0].x, props.points[0].y)
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(props.points[0].x, props.points[0].y);
     for (let i = 1; i < props.points.length; i++) {
-      ctx.lineTo(props.points[i].x, props.points[i].y)
+      ctx.lineTo(props.points[i].x, props.points[i].y);
     }
-    ctx.closePath()
-    ctx.stroke()
-    ctx.restore()
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
   }
 }
 
@@ -642,19 +643,19 @@ class Bullet {
 
     const { width, height } = screen;
 
-    this.x += delta * this.dx
-    this.y += delta * this.dy
+    this.x += delta * this.dx;
+    this.y += delta * this.dy;
 
     if (this.x > width) {
-      this.x -= width
+      this.x -= width;
     } else if (this.x < 0) {
-      this.x += width
+      this.x += width;
     }
 
     if (this.y > height) {
-      this.y -= height
+      this.y -= height;
     } else if (this.y < 0) {
-      this.y += height
+      this.y += height;
     }
 
     this.time += applicationState.deltaTime;
@@ -673,14 +674,14 @@ class Bullet {
   }
 
   _render(ctx, x, y) {
-    ctx.save()
+    ctx.save();
     ctx.translate(screen.x + x * screen.scale, screen.y + y * screen.scale)
     ctx.scale(screen.scale, screen.scale);
-    ctx.strokeStyle = 'white'
-    ctx.lineWidth = 1
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.arc(0, 0, 1, 0, 2 * Math.PI);
     ctx.stroke();
-    ctx.restore()
+    ctx.restore();
   }
 }
